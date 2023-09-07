@@ -7,10 +7,10 @@ namespace App.Scripts.Scenes.SceneFillwords.Features.ProviderLevel
 {
     public class ProviderFillwordLevel : IProviderFillwordLevel
     {
-        private List<string> _dictionary;
-        private List<List<char>> _words;
+        private readonly List<string> _dictionary;
+        private readonly List<string> _levels;
 
-        private List<string> _levels;
+        private List<List<char>> _words;
         private List<List<int>> _positions;
 
         public ProviderFillwordLevel()
