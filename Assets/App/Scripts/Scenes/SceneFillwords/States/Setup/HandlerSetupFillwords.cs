@@ -14,6 +14,8 @@ namespace App.Scripts.Scenes.SceneFillwords.States.Setup
         private readonly IServiceLevelSelection _serviceLevelSelection;
         private readonly ViewGridLetters _viewGridLetters;
 
+        private int _lastIndex;
+
         public HandlerSetupFillwords(IProviderFillwordLevel providerFillwordLevel,
             IServiceLevelSelection serviceLevelSelection,
             ViewGridLetters viewGridLetters, ContainerGrid containerGrid)
@@ -26,11 +28,34 @@ namespace App.Scripts.Scenes.SceneFillwords.States.Setup
 
         public Task Process()
         {
-            var model = _providerFillwordLevel.LoadModel(_serviceLevelSelection.CurrentLevelIndex);
+            GridFillWords model;
+            bool canLoadLevel = false;
 
-            _viewGridLetters.UpdateItems(model);
-            _containerGrid.SetupGrid(model, _serviceLevelSelection.CurrentLevelIndex);
-            return Task.CompletedTask;
+            do
+            {
+                model = _providerFillwordLevel.LoadModel(_serviceLevelSelection.CurrentLevelIndex);
+
+                if (model != null)
+                {
+                    _viewGridLetters.UpdateItems(model);
+                    _containerGrid.SetupGrid(model, _serviceLevelSelection.CurrentLevelIndex);
+
+                    _lastIndex = _serviceLevelSelection.CurrentLevelIndex;
+                    canLoadLevel = true;
+                }
+                else
+                {
+                    int currentIndex = _serviceLevelSelection.CurrentLevelIndex;
+
+                    if (currentIndex > _lastIndex)
+                        _serviceLevelSelection.UpdateSelectedLevel(currentIndex + 1);
+                    else if (currentIndex < _lastIndex)
+                        _serviceLevelSelection.UpdateSelectedLevel(currentIndex - 1);
+                }
+            }
+            while (model == null);
+
+            return canLoadLevel == false ? throw new System.Exception() : Task.CompletedTask;
         }
     }
 }

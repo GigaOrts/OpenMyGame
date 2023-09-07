@@ -1,4 +1,5 @@
 using App.Scripts.Scenes.SceneFillwords.Features.FillwordModels;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,16 +7,29 @@ namespace App.Scripts.Scenes.SceneFillwords.Features.ProviderLevel
 {
     public class ProviderFillwordLevel : IProviderFillwordLevel
     {
+        private List<string> _dictionary;
+        private List<List<char>> _words;
+
+        private List<string> _levels;
+        private List<List<int>> _positions;
+
+        public ProviderFillwordLevel()
+        {
+            _dictionary = new List<string>();
+            _words = new List<List<char>>();
+            _levels = new List<string>();
+            _positions = new List<List<int>>();
+        }
+
         public GridFillWords LoadModel(int index)
         {
-            List<string> dictionary = new List<string>();
-            List<string> levels = new List<string>();
+            index--;
 
             TextAsset dictionaryAsset = Resources.Load<TextAsset>("Fillwords/words_list");
             if (dictionaryAsset != null)
             {
-                string[] dictionaryLines = dictionaryAsset.text.Split('\n');
-                dictionary.AddRange(dictionaryLines);
+                string[] dictionaryLines = dictionaryAsset.text.Split("\r\n");
+                _dictionary.AddRange(dictionaryLines);
             }
             else
             {
@@ -25,39 +39,119 @@ namespace App.Scripts.Scenes.SceneFillwords.Features.ProviderLevel
             TextAsset levelsAsset = Resources.Load<TextAsset>("Fillwords/pack_0");
             if (levelsAsset != null)
             {
-                string[] levelLines = levelsAsset.text.Split('\n');
-                levels.AddRange(levelLines);
+                string[] levelLines = levelsAsset.text.Split("\r\n");
+                _levels.AddRange(levelLines);
             }
             else
             {
                 Debug.LogError("Не удалось загрузить уровни из ресурсов.");
             }
 
-            if (index < 0 || index >= levels.Count)
-            {
+            if (TryParseLevel(index) == false)
                 return null;
-            }
 
-            string levelData = levels[index];
-            string[] levelRows = levelData.Split(new char[] { '\n', '\r' }, System.StringSplitOptions.RemoveEmptyEntries);
+            int squaredSize = 0;
+            for (int i = 0; i < _words.Count; i++)
+                for (int j = 0; j < _words[i].Count; j++)
+                    squaredSize++;
 
-            int numRows = levelRows.Length;
-            int numCols = levelRows[0].Length;
+            int gridSize = (int)Math.Sqrt(squaredSize);
 
-            GridFillWords grid = new GridFillWords(new Vector2Int(numCols, numRows));
+            GridFillWords gridFillWords = new GridFillWords(new Vector2Int(gridSize, gridSize));
 
-            for (int i = 0; i < numRows; i++)
+            for (int i = 0; i < _words.Count; i++)
             {
-                string row = levelRows[i];
-                for (int j = 0; j < numCols; j++)
+                for (int j = 0; j < _words[i].Count; j++)
                 {
-                    char letter = row[j];
-                    CharGridModel charGridModel = new CharGridModel(letter);
-                    grid.Set(i, j, charGridModel);
+                    char letter = _words[i][j];
+                    int position = _positions[i][j];
+                    string basedPosition = DecimalToBased(position, gridSize);
+
+                    if (basedPosition.Length < 2)
+                        basedPosition = basedPosition.Insert(0, "0");
+
+                    int row = int.Parse(basedPosition[0].ToString());
+                    int column = int.Parse(basedPosition[1].ToString());
+
+                    gridFillWords.Set(row, column, new CharGridModel(letter));
                 }
             }
 
-            return grid;
+            return gridFillWords;
+        }
+
+        private bool TryParseLevel(int index)
+        {
+            _words = new List<List<char>>();
+            _positions = new List<List<int>>();
+
+            int spaceCounter = 0;
+            int elementCounter = 0;
+            string temp = string.Empty;
+
+            foreach (char letter in _levels[index])
+            {
+                if (int.TryParse(letter.ToString(), out int result))
+                {
+                    temp += result.ToString();
+                }
+                else if (letter == ' ')
+                {
+                    if (spaceCounter % 2 == 0)
+                    {
+                        string word = _dictionary[int.Parse(temp)];
+
+                        _words.Add(new List<char>());
+                        _words[elementCounter] = new List<char>(word);
+
+                        _positions.Add(new List<int>());
+                    }
+                    else
+                    {
+                        _positions[elementCounter].Add(int.Parse(temp));
+                        elementCounter++;
+                    }
+
+                    temp = string.Empty;
+                    spaceCounter++;
+                }
+                else if (letter == ';')
+                {
+                    if (spaceCounter % 2 != 0)
+                    {
+                        _positions[elementCounter].Add(int.Parse(temp));
+                        temp = string.Empty;
+                    }
+                }
+            }
+
+            _positions[elementCounter].Add(int.Parse(temp));
+
+            for (int i = 0; i <= elementCounter; i++)
+            {
+                if (_words[i].Count != _positions[i].Count)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private string DecimalToBased(int decimalNumber, int toBase)
+        {
+            if (decimalNumber == 0)
+                return "0";
+
+            string based = "";
+            while (decimalNumber > 0)
+            {
+                int remainder = decimalNumber % toBase;
+                based = remainder + based;
+                decimalNumber /= toBase;
+            }
+
+            return based;
         }
     }
 }
