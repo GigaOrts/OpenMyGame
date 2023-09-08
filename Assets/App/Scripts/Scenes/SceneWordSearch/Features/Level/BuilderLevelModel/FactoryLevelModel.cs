@@ -21,8 +21,36 @@ namespace App.Scripts.Scenes.SceneWordSearch.Features.Level.BuilderLevelModel
 
         private List<char> BuildListChars(List<string> words)
         {
-            //напиши реализацию не меняя сигнатуру функции
-            throw new NotImplementedException();
+            Dictionary<char, int> maxLetterCounts = new ();
+            int defaultCount = 1;
+
+            foreach (string word in words)
+            {
+                Dictionary<char, int> letterCounts = new ();
+
+                foreach (char letter in word)
+                {
+                    if (letterCounts.ContainsKey(letter))
+                        letterCounts[letter]++;
+                    else
+                        letterCounts[letter] = defaultCount;
+                }
+
+                foreach (var item in letterCounts)
+                {
+                    maxLetterCounts[item.Key] = maxLetterCounts.ContainsKey(item.Key) 
+                        ? Math.Max(maxLetterCounts[item.Key], letterCounts[item.Key]) 
+                        : defaultCount;
+                }
+            }
+
+            List<char> levelLetters = new ();
+
+            foreach (var item in maxLetterCounts)
+                for (int i = 0; i < item.Value; i++)
+                    levelLetters.Add(item.Key);
+
+            return levelLetters;
         }
     }
 }
