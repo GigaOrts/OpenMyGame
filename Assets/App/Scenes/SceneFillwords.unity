@@ -568,7 +568,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   configLevelSelection:
-    TotalLevelCount: 10
+    TotalLevelCount: 3
     InitLevelIndex: 1
 --- !u!1 &1109098107
 GameObject:

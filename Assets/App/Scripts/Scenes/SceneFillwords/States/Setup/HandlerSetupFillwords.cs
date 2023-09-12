@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using App.Scripts.Infrastructure.GameCore.States.SetupState;
 using App.Scripts.Infrastructure.LevelSelection;
@@ -14,8 +15,6 @@ namespace App.Scripts.Scenes.SceneFillwords.States.Setup
         private readonly IServiceLevelSelection _serviceLevelSelection;
         private readonly ViewGridLetters _viewGridLetters;
 
-        private int _lastIndex;
-
         public HandlerSetupFillwords(IProviderFillwordLevel providerFillwordLevel,
             IServiceLevelSelection serviceLevelSelection,
             ViewGridLetters viewGridLetters, ContainerGrid containerGrid)
@@ -30,6 +29,9 @@ namespace App.Scripts.Scenes.SceneFillwords.States.Setup
         {
             GridFillWords model;
             bool canLoadLevel = false;
+            int levelIndex = _serviceLevelSelection.CurrentLevelIndex;
+            int lastIndex = 0;
+            int parseCounter = 0;
 
             do
             {
@@ -40,22 +42,29 @@ namespace App.Scripts.Scenes.SceneFillwords.States.Setup
                     _viewGridLetters.UpdateItems(model);
                     _containerGrid.SetupGrid(model, _serviceLevelSelection.CurrentLevelIndex);
 
-                    _lastIndex = _serviceLevelSelection.CurrentLevelIndex;
                     canLoadLevel = true;
+                    lastIndex = _serviceLevelSelection.CurrentLevelIndex;
                 }
                 else
                 {
-                    int currentIndex = _serviceLevelSelection.CurrentLevelIndex;
+                    levelIndex = _serviceLevelSelection.CurrentLevelIndex;
 
-                    if (currentIndex > _lastIndex)
-                        _serviceLevelSelection.UpdateSelectedLevel(currentIndex + 1);
-                    else if (currentIndex < _lastIndex)
-                        _serviceLevelSelection.UpdateSelectedLevel(currentIndex - 1);
+                    if (levelIndex > lastIndex)
+                        levelIndex++;
+                    else if (levelIndex < lastIndex)
+                        levelIndex--;
+
+                    _serviceLevelSelection.UpdateSelectedLevel(levelIndex);
                 }
-            }
-            while (model == null);
 
-            return canLoadLevel == false ? throw new System.Exception() : Task.CompletedTask;
+                parseCounter++;
+            }
+            while (model == null && levelIndex > 0);
+
+            if (canLoadLevel)
+                return Task.CompletedTask;
+            else
+                throw new Exception();
         }
     }
 }

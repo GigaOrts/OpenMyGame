@@ -29,18 +29,55 @@ namespace App.Scripts.Scenes.SceneFillwords.Features.ProviderLevel
             LoadResources(_dictionary, "words_list");
             LoadResources(_levels, "pack_0");
 
-            if (TryParseLevel(index) == false)
-                return null;
+            ParseLevel(index);
+
+            for (int i = 0; i < _words.Count; i++)
+            {
+                if (_words[i].Count != _positions[i].Count)
+                    return null;
+            } 
+
+            HashSet<int> uniqueIndexes = new();
+            foreach (var levelIndexes in _positions)
+            {
+                foreach (var letterIndex in levelIndexes)
+                    uniqueIndexes.Add(letterIndex);
+
+                if(levelIndexes.Count != uniqueIndexes.Count)
+                    return null;
+            }
 
             int squaredSize = 0;
             for (int i = 0; i < _words.Count; i++)
+            {
                 for (int j = 0; j < _words[i].Count; j++)
                     squaredSize++;
+            }
 
-            int gridSize = (int)Math.Sqrt(squaredSize);
+            double gridSizeDouble = Math.Sqrt(squaredSize);
+            int gridSize = (int)gridSizeDouble;
+
+            if (gridSizeDouble != gridSize)
+                return null;
+
+            int maxIndex = squaredSize - 1;
+            foreach (var levelIndexes in _positions)
+            {
+                foreach (var letterIndex in levelIndexes)
+                {
+                    if (letterIndex > maxIndex)
+                        return null;
+                }
+            }
 
             GridFillWords gridFillWords = new GridFillWords(new Vector2Int(gridSize, gridSize));
+            FillGrid(gridSize, gridFillWords);
 
+            return gridFillWords;
+        }
+
+        private void FillGrid(int gridSize, GridFillWords gridFillWords)
+        {
             for (int i = 0; i < _words.Count; i++)
             {
                 for (int j = 0; j < _words[i].Count; j++)
@@ -58,8 +95,6 @@ namespace App.Scripts.Scenes.SceneFillwords.Features.ProviderLevel
                     gridFillWords.Set(row, column, new CharGridModel(letter));
                 }
             }
-
-            return gridFillWords;
         }
 
         private void LoadResources(List<string> storage, string fileName)
@@ -76,7 +111,7 @@ namespace App.Scripts.Scenes.SceneFillwords.Features.ProviderLevel
             }
         }
 
-        private bool TryParseLevel(int index)
+        private void ParseLevel(int index)
         {
             _words = new List<List<char>>();
             _positions = new List<List<int>>();
@@ -122,16 +157,6 @@ namespace App.Scripts.Scenes.SceneFillwords.Features.ProviderLevel
             }
 
             _positions[elementCounter].Add(int.Parse(temp));
-
-            for (int i = 0; i <= elementCounter; i++)
-            {
-                if (_words[i].Count != _positions[i].Count)
-                {
-                    return false;
-                }
-            }
-
-            return true;
         }
 
         private string DecimalToBased(int decimalNumber, int toBase)
