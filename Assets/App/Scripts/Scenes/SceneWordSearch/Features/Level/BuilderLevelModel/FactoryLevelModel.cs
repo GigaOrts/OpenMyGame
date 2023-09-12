@@ -21,12 +21,12 @@ namespace App.Scripts.Scenes.SceneWordSearch.Features.Level.BuilderLevelModel
 
         private List<char> BuildListChars(List<string> words)
         {
-            Dictionary<char, int> maxLetterCounts = new ();
+            Dictionary<char, int> maxLetterCounts = new();
             int defaultCount = 1;
 
             foreach (string word in words)
             {
-                Dictionary<char, int> letterCounts = new ();
+                Dictionary<char, int> letterCounts = new();
 
                 foreach (char letter in word)
                 {
@@ -36,15 +36,17 @@ namespace App.Scripts.Scenes.SceneWordSearch.Features.Level.BuilderLevelModel
                         letterCounts[letter] = defaultCount;
                 }
 
+
                 foreach (var item in letterCounts)
                 {
-                    maxLetterCounts[item.Key] = maxLetterCounts.ContainsKey(item.Key) 
-                        ? Math.Max(maxLetterCounts[item.Key], letterCounts[item.Key]) 
-                        : defaultCount;
+                    if (maxLetterCounts.ContainsKey(item.Key))
+                        maxLetterCounts[item.Key] = Math.Max(maxLetterCounts[item.Key], item.Value);
+                    else
+                        maxLetterCounts[item.Key] = item.Value;
                 }
             }
 
-            List<char> levelLetters = new ();
+            List<char> levelLetters = new();
 
             foreach (var item in maxLetterCounts)
                 for (int i = 0; i < item.Value; i++)
