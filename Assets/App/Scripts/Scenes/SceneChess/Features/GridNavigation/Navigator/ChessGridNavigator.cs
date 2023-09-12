@@ -97,6 +97,7 @@ namespace App.Scripts.Scenes.SceneChess.Features.GridNavigation.Navigator
                 path.Insert(0, current);
             }
 
+            path.RemoveAt(0);
             return path;
         }
 
@@ -210,19 +211,16 @@ namespace App.Scripts.Scenes.SceneChess.Features.GridNavigation.Navigator
         {
             List<Vector2Int> validMoves = new List<Vector2Int>();
             Vector2Int current = position;
+            bool isOutOfBounds;
 
             while (true)
             {
                 current += new Vector2Int(dx, dy);
 
-                if (current.x < 0 || current.x >= _grid.Size.x || current.y < 0 || current.y >= _grid.Size.y)
-                {
+                isOutOfBounds = current.x < 0 || current.x >= _grid.Size.x || current.y < 0 || current.y >= _grid.Size.y;
+
+                if (isOutOfBounds || _grid.Get(current) != null)
                     break;
-                }
-                else if (_grid.Get(current) != null)
-                {
-                    break;
-                }
 
                 validMoves.Add(current);
             }
