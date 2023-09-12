@@ -24,7 +24,7 @@ namespace App.Scripts.Scenes.SceneChess.Features.GridNavigation.Navigator
 
             openSet.Add(from);
             gScore[from] = 0;
-            fScore[from] = HeuristicCostEstimate(from, to);
+            fScore[from] = 0;
 
             foreach (ChessUnit piece in _grid.Pieces)
             {
@@ -37,13 +37,17 @@ namespace App.Scripts.Scenes.SceneChess.Features.GridNavigation.Navigator
 
                 if (current == to)
                 {
+                    foreach (var item in ReconstructPath(cameFrom, current))
+                    {
+                        Debug.Log(item);
+                    }
+
                     return ReconstructPath(cameFrom, current);
                 }
 
                 openSet.Remove(current);
                 closedSet.Add(current);
 
-                // Перебрать соседей текущей вершины
                 foreach (Vector2Int neighbor in GetValidMovesForCurrentUnit(unit, current))
                 {
                     if (closedSet.Contains(neighbor))
@@ -57,7 +61,7 @@ namespace App.Scripts.Scenes.SceneChess.Features.GridNavigation.Navigator
                     {
                         cameFrom[neighbor] = current;
                         gScore[neighbor] = tentativeGScore;
-                        fScore[neighbor] = gScore[neighbor] + HeuristicCostEstimate(neighbor, to);
+                        fScore[neighbor] = gScore[neighbor];
 
                         if (!openSet.Contains(neighbor))
                         {
@@ -68,11 +72,6 @@ namespace App.Scripts.Scenes.SceneChess.Features.GridNavigation.Navigator
             }
 
             return null;
-        }
-
-        private float HeuristicCostEstimate(Vector2Int from, Vector2Int to)
-        {
-            return Math.Abs(from.x - to.x) + Math.Abs(from.y - to.y);
         }
 
         private Vector2Int FindLowestFScore(List<Vector2Int> openSet, Dictionary<Vector2Int, float> fScore)
