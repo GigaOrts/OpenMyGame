@@ -1,6 +1,7 @@
 using App.Scripts.Scenes.SceneFillwords.Features.FillwordModels;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 namespace App.Scripts.Scenes.SceneFillwords.Features.ProviderLevel
@@ -25,27 +26,8 @@ namespace App.Scripts.Scenes.SceneFillwords.Features.ProviderLevel
         {
             index--;
 
-            TextAsset dictionaryAsset = Resources.Load<TextAsset>("Fillwords/words_list");
-            if (dictionaryAsset != null)
-            {
-                string[] dictionaryLines = dictionaryAsset.text.Split("\r\n");
-                _dictionary.AddRange(dictionaryLines);
-            }
-            else
-            {
-                Debug.LogError("Не удалось загрузить словарь из ресурсов.");
-            }
-
-            TextAsset levelsAsset = Resources.Load<TextAsset>("Fillwords/pack_0");
-            if (levelsAsset != null)
-            {
-                string[] levelLines = levelsAsset.text.Split("\r\n");
-                _levels.AddRange(levelLines);
-            }
-            else
-            {
-                Debug.LogError("Не удалось загрузить уровни из ресурсов.");
-            }
+            LoadResources(_dictionary, "words_list");
+            LoadResources(_levels, "pack_0");
 
             if (TryParseLevel(index) == false)
                 return null;
@@ -78,6 +60,20 @@ namespace App.Scripts.Scenes.SceneFillwords.Features.ProviderLevel
             }
 
             return gridFillWords;
+        }
+
+        private void LoadResources(List<string> storage, string fileName)
+        {
+            TextAsset asset = Resources.Load<TextAsset>($"Fillwords/{fileName}");
+            if (asset != null)
+            {
+                string[] lines = asset.text.Split("\r\n");
+                storage.AddRange(lines);
+            }
+            else
+            {
+                throw new FileNotFoundException("Не удалось загрузить словарь из ресурсов.");
+            }
         }
 
         private bool TryParseLevel(int index)
