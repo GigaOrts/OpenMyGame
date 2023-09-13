@@ -28,10 +28,7 @@ namespace App.Scripts.Scenes.SceneFillwords.States.Setup
         public Task Process()
         {
             GridFillWords model;
-            bool canLoadLevel = false;
-            int levelIndex = _serviceLevelSelection.CurrentLevelIndex;
-            int lastIndex = 0;
-            int parseCounter = 0;
+            int startIndex = _serviceLevelSelection.CurrentLevelIndex;
 
             do
             {
@@ -41,30 +38,18 @@ namespace App.Scripts.Scenes.SceneFillwords.States.Setup
                 {
                     _viewGridLetters.UpdateItems(model);
                     _containerGrid.SetupGrid(model, _serviceLevelSelection.CurrentLevelIndex);
-
-                    canLoadLevel = true;
-                    lastIndex = _serviceLevelSelection.CurrentLevelIndex;
                 }
                 else
                 {
-                    levelIndex = _serviceLevelSelection.CurrentLevelIndex;
+                    _serviceLevelSelection.UpdateSelectedLevel(_serviceLevelSelection.CurrentLevelIndex + 1);
 
-                    if (levelIndex > lastIndex)
-                        levelIndex++;
-                    else if (levelIndex < lastIndex)
-                        levelIndex--;
-
-                    _serviceLevelSelection.UpdateSelectedLevel(levelIndex);
+                    if (startIndex == _serviceLevelSelection.CurrentLevelIndex)
+                        throw new Exception("Failed to load any of the levels.");
                 }
-
-                parseCounter++;
             }
-            while (model == null && levelIndex > 0);
+            while (model == null);
 
-            if (canLoadLevel)
-                return Task.CompletedTask;
-            else
-                throw new Exception();
+            return Task.CompletedTask;
         }
     }
 }

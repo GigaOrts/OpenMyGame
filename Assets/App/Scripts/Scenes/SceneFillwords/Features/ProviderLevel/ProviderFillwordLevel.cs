@@ -14,6 +14,8 @@ namespace App.Scripts.Scenes.SceneFillwords.Features.ProviderLevel
         private List<List<char>> _words;
         private List<List<int>> _positions;
 
+        public int LevelsToParse { get; private set; }
+
         public ProviderFillwordLevel()
         {
             _dictionary = new List<string>();
@@ -28,23 +30,31 @@ namespace App.Scripts.Scenes.SceneFillwords.Features.ProviderLevel
 
             LoadResources(_dictionary, "words_list");
             LoadResources(_levels, "pack_0");
-
             ParseLevel(index);
 
             for (int i = 0; i < _words.Count; i++)
             {
                 if (_words[i].Count != _positions[i].Count)
+                {
                     return null;
+                }
             } 
 
             HashSet<int> uniqueIndexes = new();
+            List<int> totalIndexes = new();
+
             foreach (var levelIndexes in _positions)
             {
                 foreach (var letterIndex in levelIndexes)
+                {
                     uniqueIndexes.Add(letterIndex);
+                    totalIndexes.Add(letterIndex);
+                }
+            }
 
-                if(levelIndexes.Count != uniqueIndexes.Count)
-                    return null;
+            if (totalIndexes.Count != uniqueIndexes.Count)
+            {
+                return null;
             }
 
             int squaredSize = 0;
@@ -58,7 +68,9 @@ namespace App.Scripts.Scenes.SceneFillwords.Features.ProviderLevel
             int gridSize = (int)gridSizeDouble;
 
             if (gridSizeDouble != gridSize)
+            {
                 return null;
+            }
 
             int maxIndex = squaredSize - 1;
             foreach (var levelIndexes in _positions)
