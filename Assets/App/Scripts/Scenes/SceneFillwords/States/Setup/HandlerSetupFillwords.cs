@@ -28,7 +28,7 @@ namespace App.Scripts.Scenes.SceneFillwords.States.Setup
         public Task Process()
         {
             GridFillWords model;
-            int startIndex = _serviceLevelSelection.CurrentLevelIndex;
+            int processFirstIndex = _serviceLevelSelection.CurrentLevelIndex;
 
             do
             {
@@ -43,7 +43,7 @@ namespace App.Scripts.Scenes.SceneFillwords.States.Setup
                 {
                     _serviceLevelSelection.UpdateSelectedLevel(_serviceLevelSelection.CurrentLevelIndex + 1);
 
-                    if (startIndex == _serviceLevelSelection.CurrentLevelIndex)
+                    if (processFirstIndex == _serviceLevelSelection.CurrentLevelIndex)
                         throw new Exception("Failed to load any of the levels.");
                 }
             }
