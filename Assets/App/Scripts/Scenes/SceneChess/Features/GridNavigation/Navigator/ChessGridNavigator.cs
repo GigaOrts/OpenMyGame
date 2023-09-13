@@ -37,11 +37,6 @@ namespace App.Scripts.Scenes.SceneChess.Features.GridNavigation.Navigator
 
                 if (current == to)
                 {
-                    foreach (var item in ReconstructPath(cameFrom, current))
-                    {
-                        Debug.Log(item);
-                    }
-
                     return ReconstructPath(cameFrom, current);
                 }
 
